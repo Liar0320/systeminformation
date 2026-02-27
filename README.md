@@ -285,6 +285,11 @@ Full function reference with examples can be found at
 |                  | [0].path      |       |     | X   | X   |     | installation path                |
 |                  | [0].version   |       |     | X   | X   |     | application version              |
 |                  | [0].icon      |       |     | X   | X   |     | application icon path            |
+| si.getRegistryInfo(regnames, cb) | [{...}]  |       |     |     | X   |     | query registry info by regname(s) |
+|                  | [0].regname   |       |     |     | X   |     | registry name                    |
+|                  | [0].path      |       |     |     | X   |     | installation path (null if not found) |
+|                  | [0].icon      |       |     |     | X   |     | application icon path (null if not found) |
+|                  | [0].version   |       |     |     | X   |     | application version (null if not found) |
 
 #### 3. CPU
 

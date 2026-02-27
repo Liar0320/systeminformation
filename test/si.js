@@ -57,6 +57,7 @@ function test(f) {
       else if (f === '25') { si.dockerContainerProcesses('*').then((data) => { if (data !== null) { resolve({ data, title: 'Docker Cont Processes' }); } else { resolve('not_supported'); } }); }
       else if (f === '26') { si.dockerVolumes().then((data) => { if (data !== null) { resolve({ data, title: 'Docker Volumes' }); } else { resolve('not_supported'); } }); }
       else if (f === '30') { si.scanInstalledApps().then((data) => { if (data !== null) { resolve({ data, title: 'Scan Installed Apps' }); } else { resolve('not_supported'); } }); }
+      else if (f === '31') { si.getRegistryInfo(['BZDisplayServiceCaster', 'NearHub']).then((data) => { if (data !== null) { resolve({ data, title: 'Get Registry Info' }); } else { resolve('not_supported'); } }); }
       else if (f === '0') { si.getStaticData().then((data) => { if (data !== null) { resolve({ data, title: 'All Static Data' }); } else { resolve('not_supported'); } }); }
       else if (f === '1') { si.getDynamicData('apache2, postgres, wsearch').then((data) => { if (data !== null) { resolve({ data, title: 'All Dynamic Data' }); } else { resolve('not_supported'); } }); }
       else if (f === '2') { si.getAllData('apache2, postgres, wsearch').then((data) => { if (data !== null) { resolve({ data, title: 'All Data' }); } else { resolve('not_supported'); } }); }

@@ -31,6 +31,7 @@ function printMenu() {
   console.log('│  g ... Graphics           s ... Services           z ... Users              25 .. Docker Cont Proc                          │');
   console.log('│  h ... Bluetooth          S ... Shell              k ... System Language    26 .. Docker Volumes        q >>> QUIT          │');
   console.log('│  n ... Ethernet Status                                                       30 .. Scan Installed Apps                      │');
+  console.log('│                                                                              31 .. Get Registry Info                        │');
   console.log('└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘');
 }
 

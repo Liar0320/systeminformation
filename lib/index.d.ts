@@ -983,6 +983,7 @@ export function bios(cb?: (data: Systeminformation.BiosData) => any): Promise<Sy
 export function baseboard(cb?: (data: Systeminformation.BaseboardData) => any): Promise<Systeminformation.BaseboardData>;
 export function chassis(cb?: (data: Systeminformation.ChassisData) => any): Promise<Systeminformation.ChassisData>;
 export function scanInstalledApps(cb?: (data: Systeminformation.InstalledAppData[]) => any): Promise<Systeminformation.InstalledAppData[]>;
+export function getRegistryInfo(regnames: string | string[], cb?: (data: Systeminformation.RegistryInfoData[]) => any): Promise<Systeminformation.RegistryInfoData[]>;
 
 export function time(): Systeminformation.TimeData;
 export function osInfo(cb?: (data: Systeminformation.OsData) => any): Promise<Systeminformation.OsData>;
