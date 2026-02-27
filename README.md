@@ -280,6 +280,11 @@ Full function reference with examples can be found at
 |                  | serial        | X     | X   | X   | X   |     | serial number                    |
 |                  | assetTag      | X     | X   | X   | X   |     | asset tag                        |
 |                  | sku           |       |     |     | X   |     | SKU number                       |
+| si.scanInstalledApps(cb) | [{...}]  |       |     | X   | X   |     | scan installed applications      |
+|                  | [0].name      |       |     | X   | X   |     | application name                 |
+|                  | [0].path      |       |     | X   | X   |     | installation path                |
+|                  | [0].version   |       |     | X   | X   |     | application version              |
+|                  | [0].icon      |       |     | X   | X   |     | application icon path            |
 
 #### 3. CPU
 

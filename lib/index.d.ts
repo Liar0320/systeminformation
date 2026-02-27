@@ -65,6 +65,20 @@ export namespace Systeminformation {
     sku: string;
   }
 
+  interface InstalledAppData {
+    name: string;
+    path: string;
+    version: string;
+    icon: string;
+  }
+
+  interface RegistryInfoData {
+    regname: string;
+    path: string | null;
+    icon: string | null;
+    version: string | null;
+  }
+
   // 3. CPU, Memory, Disks, Battery, Graphics
 
   interface CpuData {
@@ -968,6 +982,7 @@ export function system(cb?: (data: Systeminformation.SystemData) => any): Promis
 export function bios(cb?: (data: Systeminformation.BiosData) => any): Promise<Systeminformation.BiosData>;
 export function baseboard(cb?: (data: Systeminformation.BaseboardData) => any): Promise<Systeminformation.BaseboardData>;
 export function chassis(cb?: (data: Systeminformation.ChassisData) => any): Promise<Systeminformation.ChassisData>;
+export function scanInstalledApps(cb?: (data: Systeminformation.InstalledAppData[]) => any): Promise<Systeminformation.InstalledAppData[]>;
 
 export function time(): Systeminformation.TimeData;
 export function osInfo(cb?: (data: Systeminformation.OsData) => any): Promise<Systeminformation.OsData>;
