@@ -68,6 +68,8 @@ export namespace Systeminformation {
   interface InstalledAppData {
     name: string;
     path: string;
+    installLocation: string;
+    launchPath: string;
     version: string;
     icon: string;
   }
@@ -75,6 +77,8 @@ export namespace Systeminformation {
   interface RegistryInfoData {
     regname: string;
     path: string | null;
+    installLocation: string | null;
+    launchPath: string | null;
     icon: string | null;
     version: string | null;
   }

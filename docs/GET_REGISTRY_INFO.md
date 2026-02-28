@@ -2,7 +2,7 @@
 
 ## 功能描述
 
-`getRegistryInfo()` 函数用于根据注册表名称（regname）查询 Windows 注册表中已安装应用程序的详细信息，包括安装路径、图标路径和版本号。
+`getRegistryInfo()` 函数用于根据注册表名称（regname）查询 Windows 注册表中已安装应用程序的详细信息，包括启动路径、安装目录、图标路径和版本号。
 
 该函数支持单个或多个注册表名称的批量查询，适用于需要快速获取特定应用程序信息的场景。
 
@@ -17,7 +17,8 @@ Promise<RegistryInfoData[]>
 
 interface RegistryInfoData {
   regname: string;        // 注册表名称
-  path: string | null;    // 安装路径（未找到时为 null）
+  path: string | null;    // 启动路径（从 DisplayIcon 解析出的可执行文件路径）
+  installLocation: string | null; // 注册表原始 InstallLocation
   icon: string | null;    // 图标路径（未找到时为 null）
   version: string | null; // 版本号（未找到时为 null）
 }
@@ -25,7 +26,8 @@ interface RegistryInfoData {
 
 **返回数据说明**:
 - `regname`: 查询的注册表名称
-- `path`: 应用程序的安装路径（InstallLocation）
+- `path`: 应用程序启动路径（从 `DisplayIcon` 解析并校验后的可执行文件路径）
+- `installLocation`: 应用程序注册表安装目录（原始 `InstallLocation`）
 - `icon`: 应用程序的图标文件路径（DisplayIcon）
 - `version`: 应用程序的版本号（DisplayVersion）
 - 如果查询失败或应用程序不存在，对应字段返回 `null`
@@ -117,14 +119,16 @@ si.getRegistryInfo(['BZDisplayServiceCaster', 'NearHub'], (data) => {
 [
   {
     "regname": "BZDisplayServiceCaster",
-    "path": "C:\\Program Files\\BZDisplayService",
+    "path": "C:\\Program Files\\BZDisplayService\\WindowsServer.exe",
+    "installLocation": "C:\\Program Files\\BZDisplayService",
     "icon": "C:\\Program Files\\BZDisplayService\\icon.ico",
     "version": "1.2.3"
   },
   {
     "regname": "NearHub",
-    "path": "C:\\Program Files\\NearHub",
-    "icon": "C:\\Program Files\\NearHub\\app.exe",
+    "path": "C:\\Program Files\\NearHub\\app.exe",
+    "installLocation": "C:\\Program Files\\NearHub",
+    "icon": null,
     "version": "2.0.1"
   }
 ]
@@ -137,6 +141,7 @@ si.getRegistryInfo(['BZDisplayServiceCaster', 'NearHub'], (data) => {
   {
     "regname": "NonExistentApp",
     "path": null,
+    "installLocation": null,
     "icon": null,
     "version": null
   }
@@ -149,20 +154,23 @@ si.getRegistryInfo(['BZDisplayServiceCaster', 'NearHub'], (data) => {
 [
   {
     "regname": "BZDisplayServiceCaster",
-    "path": "C:\\Program Files\\BZDisplayService",
+    "path": "C:\\Program Files\\BZDisplayService\\WindowsServer.exe",
+    "installLocation": "C:\\Program Files\\BZDisplayService",
     "icon": "C:\\Program Files\\BZDisplayService\\icon.ico",
     "version": "1.2.3"
   },
   {
     "regname": "NonExistentApp",
     "path": null,
+    "installLocation": null,
     "icon": null,
     "version": null
   },
   {
     "regname": "NearHub",
-    "path": "C:\\Program Files\\NearHub",
-    "icon": "C:\\Program Files\\NearHub\\app.exe",
+    "path": "C:\\Program Files\\NearHub\\app.exe",
+    "installLocation": "C:\\Program Files\\NearHub",
+    "icon": null,
     "version": "2.0.1"
   }
 ]
@@ -172,7 +180,7 @@ si.getRegistryInfo(['BZDisplayServiceCaster', 'NearHub'], (data) => {
 
 1. **应用程序检测**: 检查特定应用程序是否已安装
 2. **版本验证**: 获取已安装应用程序的版本号，用于版本兼容性检查
-3. **路径查找**: 获取应用程序的安装路径，用于启动或配置
+3. **路径查找**: 获取应用程序启动路径与安装目录，用于启动或配置
 4. **图标提取**: 获取应用程序的图标路径，用于 UI 显示
 5. **批量检测**: 一次性检查多个应用程序的安装状态
 6. **依赖检查**: 在安装前检查依赖应用程序是否存在
@@ -272,7 +280,7 @@ async function getAppDetails(appName) {
 
   return {
     name: app.regname,
-    installPath: app.path,
+    installPath: app.installLocation,
     iconPath: app.icon,
     version: app.version,
     isInstalled: true
@@ -287,6 +295,61 @@ getAppDetails('BZDisplayServiceCaster').then(details => {
   }
 });
 ```
+
+## 设计决策
+
+### 为什么要特殊处理 path 和 icon 字段？
+
+Windows 注册表中的应用程序信息存在以下问题：
+
+#### 1. path 字段语义
+
+**问题现象**：
+`InstallLocation` 在很多应用里为空、过时或不准确，不适合作为启动依据。
+
+**解决方案**：
+将 `path` 定义为启动路径（可执行文件路径）；并单独保留 `installLocation`。
+
+**示例**：
+```
+DisplayIcon: "C:\Program Files (x86)\Bozee\BZDisplayService\WindowsServer.exe"
+提取为 path: "C:\Program Files (x86)\Bozee\BZDisplayService\WindowsServer.exe"
+```
+
+**原理**：
+- `DisplayIcon` 通常包含可执行文件路径（可能带 `,0` 索引）
+- 解析并校验后可得到更可靠的启动路径
+- 安装目录信息通过 `installLocation` 单独提供
+
+#### 2. icon 字段问题
+
+**问题现象**：
+注册表中的 `DisplayIcon` 字段经常指向可执行文件（.exe）、动态链接库（.dll）或其他非图标文件。
+
+**解决方案**：
+只返回真正的图标文件（.ico），其他类型返回 null。
+
+**原因**：
+- **语义正确性**：icon 字段应该表示图标文件，而不是可执行文件
+- **使用场景**：调用者期望获取可以直接显示的图标文件路径
+- **避免混淆**：.exe 文件虽然包含图标资源，但不是图标文件本身
+
+**对比**：
+```javascript
+// 错误的做法（直接返回注册表原始值）
+{
+  icon: "C:\\Program Files\\App\\app.exe"  // 这是可执行文件，不是图标
+}
+
+// 正确的做法（只返回 .ico 文件）
+{
+  icon: null  // 如果没有 .ico 文件，返回 null
+}
+```
+
+### 与 scanInstalledApps 的一致性
+
+`scanInstalledApps()` 函数也应用了相同的处理逻辑，确保两个函数返回的数据格式和语义一致。
 
 ## 技术细节
 

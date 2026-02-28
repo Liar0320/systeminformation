@@ -282,12 +282,16 @@ Full function reference with examples can be found at
 |                  | sku           |       |     |     | X   |     | SKU number                       |
 | si.scanInstalledApps(cb) | [{...}]  |       |     | X   | X   |     | scan installed applications      |
 |                  | [0].name      |       |     | X   | X   |     | application name                 |
-|                  | [0].path      |       |     | X   | X   |     | installation path                |
+|                  | [0].path      |       |     | X   | X   |     | launch path (executable path)    |
+|                  | [0].installLocation |  |     | X   | X   |     | raw InstallLocation from registry |
+|                  | [0].launchPath |      |     | X   | X   |     | parsed launch executable path     |
 |                  | [0].version   |       |     | X   | X   |     | application version              |
 |                  | [0].icon      |       |     | X   | X   |     | application icon path            |
 | si.getRegistryInfo(regnames, cb) | [{...}]  |       |     |     | X   |     | query registry info by regname(s) |
 |                  | [0].regname   |       |     |     | X   |     | registry name                    |
-|                  | [0].path      |       |     |     | X   |     | installation path (null if not found) |
+|                  | [0].path      |       |     |     | X   |     | launch path (null if not found)  |
+|                  | [0].installLocation |  |     |     | X   |     | raw InstallLocation (null if not found) |
+|                  | [0].launchPath |      |     |     | X   |     | parsed launch executable path (null if not found) |
 |                  | [0].icon      |       |     |     | X   |     | application icon path (null if not found) |
 |                  | [0].version   |       |     |     | X   |     | application version (null if not found) |
 

@@ -15,7 +15,8 @@
 ```typescript
 interface InstalledAppData {
   name: string;      // 应用程序名称
-  path: string;      // 应用程序安装路径
+  path: string;      // 应用程序启动路径（从 DisplayIcon 解析出的可执行文件路径（Windows）
+  installLocation: string; // 注册表原始 InstallLocation（Windows）
   version: string;   // 应用程序版本号
   icon: string;      // 应用程序图标路径
 }
@@ -117,15 +118,17 @@ si.scanInstalledApps(apps => {
 [
   {
     "name": "Google Chrome",
-    "path": "C:\\Program Files\\Google\\Chrome\\Application",
+    "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "installLocation": "C:\\Program Files\\Google\\Chrome\\Application",
     "version": "145.0.7632.117",
-    "icon": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe,0"
+    "icon": null
   },
   {
     "name": "Microsoft Office",
-    "path": "C:\\Program Files\\Microsoft Office\\Office16",
+    "path": "C:\\Program Files\\Microsoft Office\\Office16\\WINWORD.EXE",
+    "installLocation": "C:\\Program Files\\Microsoft Office\\Office16",
     "version": "16.0.14326.20404",
-    "icon": "C:\\Program Files\\Microsoft Office\\Office16\\WINWORD.EXE,0"
+    "icon": null
   }
 ]
 ```
@@ -154,7 +157,7 @@ si.scanInstalledApps(apps => {
 
 5. **开发工具集成**
    - 检测开发环境（IDE、编辑器）
-   - 查找特定工具的安装路径
+   - 查找特定工具的安装目录或启动路径
    - 验证依赖软件是否已安装
 
 ## 注意事项
@@ -273,6 +276,68 @@ async function generateAppInventory() {
 
 generateAppInventory();
 ```
+
+## 设计决策
+
+### Windows 平台的 path 和 icon 字段处理
+
+在 Windows 平台上，注册表中的应用程序信息存在以下问题，需要特殊处理：
+
+#### 1. path 字段处理逻辑
+
+**问题**：
+`InstallLocation` 字段在很多应用中为空、过时或不准确。
+
+**解决方案**：
+- `path` 统一表示启动路径（从 `DisplayIcon` 中解析并校验可执行文件路径）
+- `installLocation` 保留注册表原始安装目录字段
+
+**示例**：
+```
+原始数据:
+  InstallLocation: (空)
+  DisplayIcon: "C:\Program Files (x86)\App\app.exe"
+
+处理后:
+  path: "C:\Program Files (x86)\App\app.exe"
+  installLocation: ""
+```
+
+#### 2. icon 字段处理逻辑
+
+**问题**：
+注册表中的 `DisplayIcon` 字段经常指向可执行文件（.exe）、动态链接库（.dll）等非图标文件。
+
+**解决方案**：
+只返回真正的图标文件（.ico），其他类型返回空字符串。
+
+**原因**：
+- **语义正确性**：icon 字段应该表示图标文件，而不是可执行文件
+- **使用场景**：调用者期望获取可以直接显示的图标文件路径
+- **避免混淆**：.exe 文件虽然包含图标资源，但不是图标文件本身
+
+**对比**：
+```javascript
+// 修复前（直接返回注册表原始值）
+{
+  name: "7-Zip",
+  path: "C:\\Program Files\\7-Zip\\7zFM.exe",
+  icon: "C:\\Program Files\\7-Zip\\7zFM.exe",  // 错误：这是可执行文件
+  version: "20.00"
+}
+
+// 修复后（只返回 .ico 文件）
+{
+  name: "7-Zip",
+  path: "C:\\Program Files\\7-Zip\\7zFM.exe",
+  icon: "",  // 正确：没有 .ico 文件时返回空字符串
+  version: "20.00"
+}
+```
+
+### 与 getRegistryInfo 的一致性
+
+`getRegistryInfo()` 函数应用了相同的处理逻辑，确保两个函数返回的数据格式和语义一致。
 
 ## 技术细节
 
